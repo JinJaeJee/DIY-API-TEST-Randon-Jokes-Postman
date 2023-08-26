@@ -8,25 +8,85 @@ const masterKey = "4VGP2DN-6EWM4SJ-N6FGRHV-Z3PR3TT";
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/random", (req,res) => {
-  const randomIndex = Math.floor(Math.random()*jokes.length)
-  res.json(jokes[randomIndex])
+  const randomIndex = Math.floor(Math.random()*jokes2.length)
+  res.json(jokes2[randomIndex])
 })
 
 app.get("/jokes/:id", (req, res) => {
   const id = parseInt(req.params.id);
-  const foundJoke = jokes.find((joke) => joke.id === id);
-  res.json(foundJoke);
+  const foundJoke = jokes2.find((joke) => joke.id === id);
+  if (foundJoke) {
+    res.json(foundJoke);
+  } else {
+    res.status(404).json({ error: 'Joke ID not found' });
+  }
+  
 });
 
-//2. GET a specific joke
+app.get("/filter", (req,res) => {
+  const type = req.query.type
+  const filterJokeType = jokes2.filter((joke) => joke.jokeType === type)
+  if (filterJokeType > 0) {
+    res.json(filterJokeType);
+  } else {
+    res.status(404).json({ error: 'JokeType not found' });
+  }
 
-//3. GET a jokes by filtering on the joke type
+})
 
-//4. POST a new joke
+app.post("/jokes", (req, res) => {
+  const newJoke = {
+    id: jokes2.length + 1,
+    jokeText: req.body.text,
+    jokeType: req.body.type,
+  }
 
-//5. PUT a joke
+  if (newJoke.jokeText && newJoke.jokeType) {
+    jokes2.push(newJoke)
+    console.log(jokes2.slice(-1))
+    res.json(newJoke);
+  } else {
+    res.status(404).json({ error: 'Please Write Joke Type and Text' });
+  }
 
-//6. PATCH a joke
+})
+
+
+app.put("/jokes/:id", (req,res) => {
+  const id = parseInt(req.params.id);
+  const replacementJoke = {
+    id: id,
+    jokeText: req.body.text,
+    jokeType: req.body.type,
+  };
+
+  if (replacementJoke.jokeText && replacementJoke.jokeType && id) {
+    const searchJokeIdRequest = jokes2.findIndex((joke) => joke.id === id)
+    jokes2[searchJokeIdRequest] = replacementJoke
+    console.log(jokes2);
+    res.json(replacementJoke)
+  }
+  else {
+    res.status(404).json({ error: 'Please Put the right ID, text or type' });
+  }
+})
+
+
+app.patch("/jokes/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const existingJoke = jokes.find((joke) => joke.id === id);
+  const replacementJoke = {
+    id: id,
+    jokeText: req.body.text || existingJoke.jokeText,
+    jokeType: req.body.type || existingJoke.jokeType,
+  };
+  const searchIndex = jokes2.findIndex((joke) => joke.id === id);
+  jokes2[searchIndex] = replacementJoke;
+  console.log(jokes2[searchIndex]);
+  res.json(replacementJoke);
+});
+
+
 
 //7. DELETE Specific joke
 
@@ -36,7 +96,7 @@ app.listen(port, () => {
   console.log(`Successfully started server on port ${port}.`);
 });
 
-var jokes = [
+var jokes2 = [
   {
     id: 1,
     jokeText:
