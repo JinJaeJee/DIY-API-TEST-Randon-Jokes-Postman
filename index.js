@@ -74,23 +74,57 @@ app.put("/jokes/:id", (req,res) => {
 
 app.patch("/jokes/:id", (req, res) => {
   const id = parseInt(req.params.id);
-  const existingJoke = jokes.find((joke) => joke.id === id);
+  const existingJoke = jokes2.find((joke) => joke.id === id);
   const replacementJoke = {
     id: id,
     jokeText: req.body.text || existingJoke.jokeText,
     jokeType: req.body.type || existingJoke.jokeType,
   };
-  const searchIndex = jokes2.findIndex((joke) => joke.id === id);
-  jokes2[searchIndex] = replacementJoke;
-  console.log(jokes2[searchIndex]);
-  res.json(replacementJoke);
+
+  if (replacementJoke.jokeText && replacementJoke.jokeType && id) {
+    const searchIndex = jokes2.findIndex((joke) => joke.id === id);
+    jokes2[searchIndex] = replacementJoke;
+    console.log(jokes2[searchIndex]);
+    res.json(replacementJoke);
+  }
+  else {
+    res.status(404).json({ error: 'Please Put the right ID, text or type' });
+  }
+
 });
-
-
-
 //7. DELETE Specific joke
+app.delete("/jokes/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const searchIndex = jokes2.findIndex((joke) => joke.id === id);
+  if (searchIndex > -1) {
+    jokes2.splice(searchIndex,1)
+    res.sendStatus(200)
+    console.log(jokes2);
+  } else {
+    res.status(404).json({error: `No joke ID ${id} , Nothing were deleted`})
+  }
 
+})
 //8. DELETE All jokes
+app.delete("/all", (req,res) => {
+  const userKey = req.query.key
+  if (masterKey === userKey) {
+    jokes2=[]
+    console.log("all jokes were deleted")
+    res.sendStatus(200)
+
+  } else {
+    res.status(404).json({error: `You not the Admin to perform this action`})
+  }
+
+})
+
+
+
+
+
+
+
 
 app.listen(port, () => {
   console.log(`Successfully started server on port ${port}.`);
